@@ -3,21 +3,18 @@ export interface FontDef {
   label: string;
   family: string;
   weight: number;
-  /** Google Fonts CSS2 の URL */
-  cssUrl: string;
   /** この書体で袋文字にするときの縁取り太さ倍率。細い書体ほど大きく */
   strokeScale: number;
   recommendedMaxChars: number;
-  mood: string;
 }
 
 export const FONTS: FontDef[] = [
-  { id: 'noto-black',  label: 'ゴシック（太）', family: '"Noto Sans JP"',       weight: 900, cssUrl: 'https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@900&display=swap',        strokeScale: 1.0, recommendedMaxChars: 20, mood: '標準' },
-  { id: 'mplus-round', label: '丸ゴシック',     family: '"M PLUS Rounded 1c"',  weight: 800, cssUrl: 'https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@800&display=swap',   strokeScale: 1.0, recommendedMaxChars: 20, mood: 'ポップ' },
-  { id: 'reggae',      label: 'インパクト',     family: '"Reggae One"',         weight: 400, cssUrl: 'https://fonts.googleapis.com/css2?family=Reggae+One&display=swap',                    strokeScale: 0.8, recommendedMaxChars: 12, mood: 'ネタ・強調' },
-  { id: 'rocknroll',   label: '手書き風',       family: '"RocknRoll One"',      weight: 400, cssUrl: 'https://fonts.googleapis.com/css2?family=RocknRoll+One&display=swap',                 strokeScale: 1.1, recommendedMaxChars: 16, mood: 'カジュアル' },
-  { id: 'shippori-b1', label: '明朝（太）',     family: '"Shippori Mincho B1"', weight: 800, cssUrl: 'https://fonts.googleapis.com/css2?family=Shippori+Mincho+B1:wght@800&display=swap',   strokeScale: 1.2, recommendedMaxChars: 16, mood: 'シリアス・ホラー' },
-  { id: 'dotgothic',   label: 'ドット',         family: '"DotGothic16"',        weight: 400, cssUrl: 'https://fonts.googleapis.com/css2?family=DotGothic16&display=swap',                   strokeScale: 1.4, recommendedMaxChars: 12, mood: 'レトロゲーム' },
+  { id: 'noto-black',   label: 'ゴシック（太）', family: '"Noto Sans JP"',         weight: 900, strokeScale: 1.0, recommendedMaxChars: 20 },
+  { id: 'mplus-round',  label: '丸ゴシック',     family: '"M PLUS Rounded 1c"',    weight: 800, strokeScale: 1.0, recommendedMaxChars: 20 },
+  { id: 'reggae',       label: 'インパクト',     family: '"Reggae One"',           weight: 400, strokeScale: 0.8, recommendedMaxChars: 12 },
+  { id: 'rocknroll',    label: '手書き風',       family: '"RocknRoll One"',        weight: 400, strokeScale: 1.1, recommendedMaxChars: 16 },
+  { id: 'shippori-b1',  label: '明朝（太）',     family: '"Shippori Mincho B1"',   weight: 800, strokeScale: 1.2, recommendedMaxChars: 16 },
+  { id: 'dotgothic',    label: 'ドット',         family: '"DotGothic16"',          weight: 400, strokeScale: 1.4, recommendedMaxChars: 12 },
 ];
 
 export const DEFAULT_FONT_ID = 'noto-black';
@@ -31,20 +28,33 @@ export function fontString(font: FontDef, sizePx: number): string {
   return `${font.weight} ${sizePx}px ${font.family}, sans-serif`;
 }
 
-const cssInserted = new Set<string>();
+/**
+ * 書体CSSは自前で配信する（Google Fonts CDN を使わない）。
+ * - fonts.googleapis.com に到達できない地域がある
+ * - 閲覧者のIPを第三者に渡さない
+ * Fontsource の CSS も unicode-range で細かく分割されているので、
+ * 実際に落ちてくるのは使った文字が入っているチャンクだけ。
+ */
+const FONT_CSS: Record<string, () => Promise<unknown>> = {
+  'noto-black': () => import('@fontsource/noto-sans-jp/900.css'),
+  'mplus-round': () => import('@fontsource/m-plus-rounded-1c/800.css'),
+  'reggae': () => import('@fontsource/reggae-one/400.css'),
+  'rocknroll': () => import('@fontsource/rocknroll-one/400.css'),
+  'shippori-b1': () => import('@fontsource/shippori-mincho-b1/800.css'),
+  'dotgothic': () => import('@fontsource/dotgothic16/400.css'),
+};
+
+const cssLoaded = new Map<string, Promise<void>>();
 const loadedRanges = new Map<string, Set<string>>();
 
-function loadCss(url: string): Promise<void> {
-  if (cssInserted.has(url)) return Promise.resolve();
-  cssInserted.add(url);
-  return new Promise((resolve) => {
-    const link = document.createElement('link');
-    link.rel = 'stylesheet';
-    link.href = url;
-    link.onload = () => resolve();
-    link.onerror = () => resolve(); // 失敗してもフォールバック書体で描き続ける
-    document.head.appendChild(link);
-  });
+function loadCss(fontId: string): Promise<void> {
+  let p = cssLoaded.get(fontId);
+  if (!p) {
+    // 失敗してもフォールバック書体で描き続ける
+    p = (FONT_CSS[fontId]?.() ?? Promise.resolve()).then(() => undefined, () => undefined);
+    cssLoaded.set(fontId, p);
+  }
+  return p;
 }
 
 /**
@@ -53,7 +63,7 @@ function loadCss(url: string): Promise<void> {
  * document.fonts.load の第2引数に実テキストを渡すのが必須。
  */
 export async function ensureFont(font: FontDef, text: string): Promise<void> {
-  await loadCss(font.cssUrl);
+  await loadCss(font.id);
   const key = `${font.weight} 100px ${font.family}`;
   try {
     await document.fonts.load(key, text || 'あ');

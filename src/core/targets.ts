@@ -13,7 +13,7 @@ export interface ExportTarget {
   /** 使用可能な形式。先頭が既定 */
   formats: OutputFormat[];
   alpha: 'full' | '1bit' | 'none';
-  /** 実際にユーザーの画面で表示される概算px */
+  /** 実際にユーザーの画面で表示される概算px。adaptForTarget の縁取り補正に使う */
   displaySize: number;
   maxChars: number;
   /** GIF出力時のマット既定色。null=透過のまま */
@@ -132,6 +132,17 @@ export function adaptForTarget(params: RenderParams, target: ExportTarget): Rend
   };
 }
 
+/**
+ * 幅×高さ×フレーム数の上限。renderFrames() は全フレームを ImageData で保持するため、
+ * これを超えるとブラウザのタブごと落ちる（RGBA なので 4 倍のバイト数になる）。
+ * 40,000,000 px = 160MB 相当。480×480×15 の約12倍。
+ */
+export const MAX_TOTAL_PIXELS = 40_000_000;
+
+export function totalPixels(params: RenderParams): number {
+  return params.canvas.w * params.canvas.h * Math.max(1, params.frameCount);
+}
+
 export type Issue = { level: 'error' | 'warn' | 'info'; message: string };
 
 /** 書き出しボタンの近くに常時表示する */
@@ -154,9 +165,19 @@ export function validate(params: RenderParams, target: ExportTarget, actualBytes
     issues.push({ level: 'info', message: 'マット合成を行うため不透明GIFになります（盤面に矩形で乗ります）' });
   }
 
+  const px = totalPixels(params);
+  if (px > MAX_TOTAL_PIXELS) {
+    issues.push({
+      level: 'error',
+      message: `${params.canvas.w}×${params.canvas.h} × ${params.frameCount}コマ は大きすぎます（ブラウザのメモリが足りず落ちます）。サイズかコマ数を下げてください`,
+    });
+  } else if (px > MAX_TOTAL_PIXELS * 0.6) {
+    issues.push({ level: 'warn', message: '書き出しに時間がかかり、端末によっては失敗します。サイズかコマ数を下げると安定します' });
+  }
+
   const chars = params.text.lines.join('').length;
   if (chars > target.maxChars) {
-    issues.push({ level: 'warn', message: `文字数 ${chars} は推奨上限 ${target.maxChars} を超えています（実表示 ${target.displaySize}px で読みにくくなります）` });
+    issues.push({ level: 'warn', message: `文字数 ${chars} は推奨上限 ${target.maxChars} を超えています（小さく表示されると読みにくくなります）` });
   }
   const font = getFont(params.text.fontId);
   if (chars > font.recommendedMaxChars) {

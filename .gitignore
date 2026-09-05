@@ -1,3 +1,6 @@
 node_modules
 dist
 *.local
+
+# ビルド時に node_modules から生成する
+public/licenses/

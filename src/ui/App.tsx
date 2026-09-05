@@ -16,6 +16,7 @@ import { ExportPanel } from './Controls/ExportPanel';
 import { LookPanel } from './Controls/LookPanel';
 import { MotionPanel } from './Controls/MotionPanel';
 import { TextPanel } from './Controls/TextPanel';
+import { AboutDialog, Footer } from './AboutDialog';
 import { GalleryScreen } from './GalleryScreen';
 import { AdvancedProvider, Button, Segmented, useAdvanced } from './kit';
 import { Preview } from './Preview';
@@ -51,6 +52,7 @@ export function App() {
   const [result, setResult] = useState<ExportResult | null>(null);
   const [resultOpen, setResultOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [aboutOpen, setAboutOpen] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
   const touched = useRef(new Set<TargetDrivenField>());
 
@@ -196,7 +198,13 @@ export function App() {
   };
 
   if (screen === 'gallery') {
-    return <GalleryScreen target={target} onTarget={setTarget} onPick={pickRecipe} />;
+    return (
+      <>
+        <GalleryScreen target={target} onTarget={setTarget} onPick={pickRecipe} />
+        <Footer onAbout={() => setAboutOpen(true)} />
+        <AboutDialog open={aboutOpen} onClose={() => setAboutOpen(false)} />
+      </>
+    );
   }
 
   const busy = progress !== null;
@@ -230,8 +238,9 @@ export function App() {
             <div className="mt-4 flex flex-wrap items-center gap-2">
               {EXPORT_FORMATS.map((f) => (
                 <Button key={f} variant="primary" onClick={() => exportAs(f)} disabled={busy}>
-                  {runningFormat === f
-                    ? `${progress!.phase} ${progress!.done}/${progress!.total}`
+                  {/* runningFormat は progress より先に立つ。両方揃うまでは通常表示のまま */}
+                  {runningFormat === f && progress
+                    ? `${progress.phase} ${progress.done}/${progress.total}`
                     : `${f.toUpperCase()} を書き出す`}
                 </Button>
               ))}
@@ -337,6 +346,9 @@ export function App() {
             </label>
           </div>
         </div>
+
+        <Footer onAbout={() => setAboutOpen(true)} />
+        <AboutDialog open={aboutOpen} onClose={() => setAboutOpen(false)} />
 
         <ResultDialog
           result={resultOpen ? result : null}

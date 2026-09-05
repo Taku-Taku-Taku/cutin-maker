@@ -3,10 +3,31 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ココフォリア カットイン素材ジェネレータ</title>
+    <title>カットイン素材ジェネレータ | 文字を入れるだけでループアニメ画像</title>
+    <meta
+      name="description"
+      content="文字を入れるだけで、虹グラデ・袋文字・集中線つきのループアニメ画像（APNG / GIF / PNG）を作れる無料ツール。ココフォリアのカットインやDiscordのスタンプ向け。すべてブラウザ内で処理され、入力内容は送信されません。"
+    />
+    <meta name="theme-color" content="#101216" />
+
+    <!-- 公開URLが決まったら SITE_URL の2箇所を差し替える -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="カットイン素材ジェネレータ" />
+    <meta property="og:title" content="カットイン素材ジェネレータ" />
+    <meta
+      property="og:description"
+      content="文字を入れるだけで、ループするカットイン素材（APNG / GIF / PNG）が作れます。ブラウザ内で完結し、入力内容は送信されません。"
+    />
+    <meta property="og:url" content="https://cutin-maker.pages.dev/" />
+    <meta property="og:image" content="https://cutin-maker.pages.dev/ogp.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="./apple-touch-icon.png" />
   </head>
   <body>
     <div id="root"></div>
+    <noscript>このツールはJavaScriptを使います。有効にしてから読み込み直してください。</noscript>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

@@ -17,7 +17,14 @@ export function encodeFrames(
   onProgress?: (done: number, total: number) => void,
 ): Promise<EncodeResult> {
   return new Promise((resolve, reject) => {
-    const worker = new Worker(new URL('./encode.worker.ts', import.meta.url), { type: 'module' });
+    let worker: Worker;
+    try {
+      worker = new Worker(new URL('./encode.worker.ts', import.meta.url), { type: 'module' });
+    } catch {
+      // module worker 非対応の古い環境。無言で失敗させない
+      reject(new Error('お使いのブラウザでは書き出しに対応していません。Chrome / Edge / Firefox / Safari の最新版でお試しください'));
+      return;
+    }
     const use = params.output.format === 'png' ? frames.slice(0, 1) : frames;
     const buffers = use.map((f) => f.data.buffer as ArrayBuffer);
     const req: EncodeRequest = {
@@ -44,7 +51,7 @@ export function encodeFrames(
     };
     worker.onerror = (e) => {
       worker.terminate();
-      reject(new Error(e.message || 'worker error'));
+      reject(new Error(e.message || '書き出し処理の読み込みに失敗しました。ページを再読み込みしてお試しください'));
     };
     worker.postMessage(req, buffers);
   });
