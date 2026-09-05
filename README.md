@@ -49,9 +49,15 @@ docs/仕様書.md               # 設計の元になった仕様
 **ループの保証**：全レイヤーとモーションを周期1の `t` の関数として書き、乱数はフレームごとに
 `deriveSeed(seed, salt)` で引き直します（フレーム間で乱数を進めるとループが破綻するため）。
 
-### 公開（Cloudflare Pages）
+### 公開（Cloudflare Workers 静的アセット）
 
-Build command `npm run build` ／ Output directory `dist` ／ Production branch `main`。
+`main` に push すると Cloudflare 側でビルドとデプロイが走ります。
+
+- Build command: `npm run build`
+- Deploy command: `npx wrangler deploy`
+- 設定は `wrangler.jsonc`（`name` はダッシュボードのプロジェクト名と一致させる）
+
+手元から直接上げる場合は `npm run deploy`（初回は `npx wrangler login` が必要）。
 公開URLが決まったら `index.html` の `og:url` と `og:image` を差し替えてください。
 
 ## ライセンス

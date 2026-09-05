@@ -1,0 +1,12 @@
+{
+  // Cloudflare Workers の静的アセットとして配信する。
+  // name はダッシュボードのプロジェクト名と一致している必要がある。
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "gif-maker",
+  "compatibility_date": "2026-09-06",
+  "assets": {
+    "directory": "./dist",
+    // 1ページしかないので、知らないパスは入口に流す
+    "not_found_handling": "single-page-application"
+  }
+}
