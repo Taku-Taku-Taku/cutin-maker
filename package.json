@@ -42,6 +42,6 @@
     "url": "git+https://github.com/Taku-Taku-Taku/gif-maker.git"
   },
   "engines": {
-    "node": ">=20"
+    "node": ">=22.12.0"
   }
 }

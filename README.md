@@ -27,7 +27,7 @@ npm test         # 単体テスト（レイアウト・カラー・ループ保�
 npm run build    # ライセンス収集 + 型チェック + 本番ビルド（dist/）
 ```
 
-Node 20 以上（`.nvmrc` 参照）。
+Node 22.12 以上（`.nvmrc` 参照。wrangler と vitest が要求）。
 
 ### 構成
 
