@@ -1,7 +1,7 @@
 import { FONTS } from '../core/fonts';
 import { Dialog } from './kit';
 
-export const REPO_URL = 'https://github.com/Taku-Taku-Taku/gif-maker';
+export const REPO_URL = 'https://github.com/Taku-Taku-Taku/cutin-maker';
 
 const OSS = [
   { name: 'React', license: 'MIT', url: 'https://github.com/facebook/react' },

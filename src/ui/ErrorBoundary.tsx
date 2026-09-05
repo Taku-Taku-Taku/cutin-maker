@@ -1,6 +1,6 @@
 import { Component, type ErrorInfo, type ReactNode } from 'react';
 
-const ISSUES_URL = 'https://github.com/Taku-Taku-Taku/gif-maker/issues';
+const ISSUES_URL = 'https://github.com/Taku-Taku-Taku/cutin-maker/issues';
 
 interface Props {
   children: ReactNode;

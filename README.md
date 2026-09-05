@@ -1,5 +1,7 @@
 # カットイン素材ジェネレータ
 
+**https://cutin-maker.taku3.com/**
+
 文字を入れるだけで、**ループするアニメ画像（APNG / GIF / PNG）**を作るブラウザツールです。
 オンラインセッションツールのカットインや、Discord のスタンプ向けの素材を想定しています。
 
@@ -58,7 +60,9 @@ docs/仕様書.md               # 設計の元になった仕様
 - 設定は `wrangler.jsonc`（`name` はダッシュボードのプロジェクト名と一致させる）
 
 手元から直接上げる場合は `npm run deploy`（初回は `npx wrangler login` が必要）。
-公開URLが決まったら `index.html` の `og:url` と `og:image` を差し替えてください。
+
+公開先は https://cutin-maker.taku3.com/ （Workers のカスタムドメイン）。
+`index.html` の `canonical` / `og:url` / `og:image` もこのURLを指しています。
 
 ## ライセンス
 
